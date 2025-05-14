@@ -20,11 +20,12 @@ public class JavaToPythonPromptBuilder {
                     """, context.outerClassFields());
         }
 
-        return String.format("""
+        String prompt = String.format("""
                         You are a code translator. Convert the following Java method to idiomatic Python 3, keeping the context in mind.
+                        Do NOT include the class declaration. Only return the body of the method as a standalone Python function. Do not redefine class, imports, or constructor.
                         
                         **Instructions:**
-                        1. **Do not** include the class declaration. Only provide the method.
+                        1. Only convert the Java method to a Python method. Do NOT include class declaration or any boilerplate.
                         2. **Use `self.`** to reference instance fields (e.g., `self.users` instead of `users`).
                         3. Follow **Python 3 syntax and conventions**.
                         4. The class **already has the following imports, fields, and constructor** (use them as context to correctly reference instance variables):
@@ -52,6 +53,8 @@ public class JavaToPythonPromptBuilder {
                 context.imports(),
                 methodCode
         );
+        log.info("Prompt for method conversion: {}", prompt);
+        return prompt;
     }
 
     public static String buildPromptForClass(ClassContext context) {
@@ -72,6 +75,7 @@ public class JavaToPythonPromptBuilder {
                          - Use standard Python modules and types. For example:
                            - Use `[]` instead of `ArrayList`
                            - Use `logging.getLogger(__name__)` instead of `Logger.getLogger(...)`
+                           - Use `python libraries` instead of `Java libraries in the import section`
                          - Wrap fields and constructor inside a proper Python `class` with an `__init__` method.
                          - If a class extends another class or implements interfaces, declare them in the Python class signature using multiple inheritance: e.g., `class Dog(Animal, Pet):`
                          - If no constructor is provided, generate an empty `__init__` method (with `pass`).

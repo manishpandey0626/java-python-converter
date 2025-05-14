@@ -3,6 +3,7 @@ package com.manish.java2py.service;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.manish.java2py.model.ClassContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +13,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class PythonClassConverter {
 
@@ -22,12 +24,14 @@ public class PythonClassConverter {
         // 1. Generate prompt and get Python code for the class body
         String classPrompt = JavaToPythonPromptBuilder.buildPromptForClass(classContext);
         String classCode = generatePythonCode(classPrompt);
+        log.info("Generated Python code for class {}: {}", classContext.className(), classCode);
         pythonCode.append(indent(classCode, indentLevel)).append("\n\n");
 
         // 2. Process methods
         for (MethodDeclaration method : classContext.methods()) {
             String methodPrompt = JavaToPythonPromptBuilder.buildPromptForMethod(classContext, method.toString());
             String methodCode = generatePythonCode(methodPrompt);
+            log.info("Generated Python code for method {}: {}", method.getNameAsString(), methodCode);
             pythonCode.append(indent(methodCode, indentLevel + 1)).append("\n\n");
         }
 
@@ -43,9 +47,9 @@ public class PythonClassConverter {
     private String generatePythonCode(String prompt) {
 
         // uncomment this line to use OpenAI API
-        //return fetchCodeBlock(openAiService.getPythonCode(prompt));
+        return fetchCodeBlock(openAiService.getPythonCode(prompt));
 
-        return fetchCodeBlock(githubAiService.chat(prompt).block());
+        // return fetchCodeBlock(githubAiService.chat(prompt).block());
     }
 
     private String fetchCodeBlock(String pythonCode) {
